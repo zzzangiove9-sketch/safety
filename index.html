@@ -441,12 +441,22 @@ function App() {
   };
 
   const saveSettings = async (patch) => {
-    await db.collection("settings").doc("config").set(patch, {merge:true});
+    // merge:true를 사용하지 않아야 키 삭제가 Firestore에 정상 반영됨
+    const fullDoc = {
+      disabledGroups: patch.disabledGroups !== undefined ? patch.disabledGroups : disabled,
+      customNotices:  patch.customNotices  !== undefined ? patch.customNotices  : notices,
+      groupNames:     patch.groupNames     !== undefined ? patch.groupNames     : groupNames,
+    };
+    await db.collection("settings").doc("config").set(fullDoc);
   };
 
   const saveGroupNames = async (newNames) => {
     setGroupNames(newNames);
-    await saveSettings({groupNames: newNames});
+    await db.collection("settings").doc("config").set({
+      disabledGroups: disabled,
+      customNotices: notices,
+      groupNames: newNames,
+    });
   };
 
   const todayNotice = notices[todayKST()] || DEFAULT_NOTICES[getDayOfYear()%DEFAULT_NOTICES.length];
@@ -481,7 +491,11 @@ function App() {
     const u={...disabled,[g]:!disabled[g]};
     if(!u[g]) delete u[g];
     setDisabled(u);
-    await saveSettings({disabledGroups:u});
+    await db.collection("settings").doc("config").set({
+      disabledGroups: u,
+      customNotices: notices,
+      groupNames: groupNames,
+    });
   };
 
   const qSummary = subs => {
@@ -767,11 +781,15 @@ function App() {
                   <button style={{...Sb.smallBtn,flex:1,background:"#2563eb",color:"#fff"}} onClick={async()=>{
                     const u={...notices,[todayKST()]:noticeInput.trim()};
                     if(!noticeInput.trim()) delete u[todayKST()];
-                    setNotices(u); await saveSettings({customNotices:u}); setNoticeEdit(false);
+                    setNotices(u);
+                    await db.collection("settings").doc("config").set({disabledGroups:disabled,customNotices:u,groupNames:groupNames});
+                    setNoticeEdit(false);
                   }}>저장</button>
                   <button style={{...Sb.smallBtn,flex:1}} onClick={async()=>{
                     const u={...notices}; delete u[todayKST()];
-                    setNotices(u); await saveSettings({customNotices:u}); setNoticeEdit(false);
+                    setNotices(u);
+                    await db.collection("settings").doc("config").set({disabledGroups:disabled,customNotices:u,groupNames:groupNames});
+                    setNoticeEdit(false);
                   }}>기본값으로</button>
                 </div>
               </div>
