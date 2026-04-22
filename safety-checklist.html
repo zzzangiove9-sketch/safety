@@ -18,7 +18,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:#0f1117;color:#e8eaf0;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;min-height:100vh;}
+body{background:#0f1117;color:#e8eaf0;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;min-height:100vh;font-size:16px;}
 #root{max-width:480px;margin:0 auto;min-height:100vh;}
 button,input,textarea{font-family:inherit;}
 textarea{resize:vertical;}
@@ -67,12 +67,12 @@ const DEFAULT_NOTICES = [
 
 const ADMIN_ACCOUNTS = [
   {id:"admin",  password:"260701", role:"super", label:"최종 관리자",      team:null},
-  {id:"team1",  password:"1111",   role:"team",  label:"A",  team:"A"},
-  {id:"team2",  password:"2222",   role:"team",  label:"B",  team:"B"},
-  {id:"team3",  password:"3333",   role:"team",  label:"C",       team:"C"},
-  {id:"team4",  password:"4444",   role:"team",  label:"D",      team:"D"},
-  {id:"team5",  password:"5555",   role:"team",  label:"E",     team:"E"},
-  {id:"team6",  password:"6666",   role:"team",  label:"F", team:"F"},
+  {id:"team1",  password:"1111",   role:"team",  label:"라인상부 관리자",  team:"라인상부"},
+  {id:"team2",  password:"2222",   role:"team",  label:"라인하부 관리자",  team:"라인하부"},
+  {id:"team3",  password:"3333",   role:"team",  label:"V2 관리자",       team:"V2"},
+  {id:"team4",  password:"4444",   role:"team",  label:"EDS 관리자",      team:"EDS"},
+  {id:"team5",  password:"5555",   role:"team",  label:"스막 관리자",     team:"스막"},
+  {id:"team6",  password:"6666",   role:"team",  label:"스막교대 관리자", team:"스막교대"},
 ];
 
 const kstNow = () => new Date(new Date().getTime() + 9*60*60*1000);
@@ -150,25 +150,25 @@ function BarChart({data, maxVal=15}) {
 
 // ── 공통 스타일 ───────────────────────────────────────────────
 const Sb = {
-  btnPrimary:{width:"100%",padding:15,background:"linear-gradient(135deg,#2563eb,#1d4ed8)",color:"#fff",border:"none",borderRadius:12,fontSize:15,fontWeight:700,cursor:"pointer"},
-  btnSecondary:{width:"100%",padding:15,background:"#161b27",color:"#9ca3af",border:"1px solid #1e2535",borderRadius:12,fontSize:14,fontWeight:600,cursor:"pointer"},
-  btnGreen:{width:"100%",padding:15,background:"linear-gradient(135deg,#059669,#047857)",color:"#fff",border:"none",borderRadius:12,fontSize:15,fontWeight:700,cursor:"pointer"},
+  btnPrimary:{width:"100%",padding:15,background:"linear-gradient(135deg,#2563eb,#1d4ed8)",color:"#fff",border:"none",borderRadius:12,fontSize:17,fontWeight:700,cursor:"pointer"},
+  btnSecondary:{width:"100%",padding:15,background:"#161b27",color:"#9ca3af",border:"1px solid #1e2535",borderRadius:12,fontSize:16,fontWeight:600,cursor:"pointer"},
+  btnGreen:{width:"100%",padding:15,background:"linear-gradient(135deg,#059669,#047857)",color:"#fff",border:"none",borderRadius:12,fontSize:17,fontWeight:700,cursor:"pointer"},
   card:{margin:"12px 14px 0",background:"#161b27",border:"1px solid #1e2535",borderRadius:12,padding:14},
-  chip:{padding:"7px 12px",background:"#161b27",border:"1px solid #1e2535",borderRadius:8,color:"#9ca3af",fontSize:12,fontWeight:600,cursor:"pointer"},
-  chipActive:{padding:"7px 12px",background:"#2563eb",border:"1px solid #2563eb",borderRadius:8,color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"},
-  chipDone:{padding:"7px 12px",background:"#0d2b1a",border:"1px solid #166534",borderRadius:8,color:"#4ade80",fontSize:12,fontWeight:600,cursor:"not-allowed"},
-  radio:{flex:1,padding:11,background:"#0f1117",border:"1px solid #1e2535",borderRadius:8,color:"#9ca3af",fontSize:14,fontWeight:600,cursor:"pointer"},
-  radioActive:{flex:1,padding:11,background:"#1e3a5f",border:"1px solid #2563eb",borderRadius:8,color:"#60a5fa",fontSize:14,fontWeight:700,cursor:"pointer"},
+  chip:{padding:"9px 14px",background:"#161b27",border:"1px solid #1e2535",borderRadius:8,color:"#9ca3af",fontSize:15,fontWeight:600,cursor:"pointer"},
+  chipActive:{padding:"9px 14px",background:"#2563eb",border:"1px solid #2563eb",borderRadius:8,color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer"},
+  chipDone:{padding:"9px 14px",background:"#0d2b1a",border:"1px solid #166534",borderRadius:8,color:"#4ade80",fontSize:15,fontWeight:600,cursor:"not-allowed"},
+  radio:{flex:1,padding:11,background:"#0f1117",border:"1px solid #1e2535",borderRadius:8,color:"#9ca3af",fontSize:16,fontWeight:600,cursor:"pointer"},
+  radioActive:{flex:1,padding:14,background:"#1e3a5f",border:"1px solid #2563eb",borderRadius:8,color:"#60a5fa",fontSize:17,fontWeight:700,cursor:"pointer"},
   smallBtn:{padding:"6px 11px",background:"#1e2535",border:"1px solid #374151",borderRadius:6,color:"#9ca3af",fontSize:12,fontWeight:600,cursor:"pointer"},
-  input:{width:"100%",padding:13,background:"#0f1117",border:"1px solid #1e2535",borderRadius:8,color:"#e8eaf0",fontSize:14,marginBottom:10,display:"block"},
-  textarea:{width:"100%",minHeight:70,background:"#0f1117",border:"1px solid #1e2535",borderRadius:8,color:"#e8eaf0",fontSize:13,padding:10,display:"block"},
+  input:{width:"100%",padding:14,background:"#0f1117",border:"1px solid #1e2535",borderRadius:8,color:"#e8eaf0",fontSize:16,marginBottom:10,display:"block"},
+  textarea:{width:"100%",minHeight:80,background:"#0f1117",border:"1px solid #1e2535",borderRadius:8,color:"#e8eaf0",fontSize:15,padding:12,display:"block"},
   topBar:{display:"flex",alignItems:"center",padding:14,borderBottom:"1px solid #1e2535",background:"#0f1117",position:"sticky",top:0,zIndex:10},
-  backBtn:{background:"none",border:"none",color:"#60a5fa",fontSize:14,cursor:"pointer",padding:0},
-  topTitle:{fontSize:15,fontWeight:700,color:"#f0f4ff",flex:1,textAlign:"center",marginRight:36},
+  backBtn:{background:"none",border:"none",color:"#60a5fa",fontSize:16,cursor:"pointer",padding:0},
+  topTitle:{fontSize:17,fontWeight:700,color:"#f0f4ff",flex:1,textAlign:"center",marginRight:36},
   badgeSuper:{fontSize:10,fontWeight:700,background:"#7c3aed",color:"#fff",padding:"2px 7px",borderRadius:4,whiteSpace:"nowrap"},
   badgeTeam:{fontSize:10,fontWeight:700,background:"#0369a1",color:"#fff",padding:"2px 7px",borderRadius:4,whiteSpace:"nowrap"},
   sectionHdr:{padding:"10px 14px",fontSize:12,fontWeight:700,color:"#9ca3af",borderBottom:"1px solid #1e2535",background:"#1a1f2e"},
-  nameInput:{width:"100%",padding:"9px 10px",background:"#0f1117",border:"1px solid #1e2535",borderRadius:6,color:"#e8eaf0",fontSize:13},
+  nameInput:{width:"100%",padding:"11px 12px",background:"#0f1117",border:"1px solid #1e2535",borderRadius:6,color:"#e8eaf0",fontSize:15},
 };
 
 
@@ -279,7 +279,7 @@ function GroupNamesPage({groupNames, onSave, onBack}) {
 
       {/* 팀 탭 */}
       <div style={{padding:"12px 14px 0"}}>
-        <div style={{fontSize:11,fontWeight:700,color:"#6b7280",marginBottom:8,letterSpacing:1}}>팀 선택</div>
+        <div style={{fontSize:13,fontWeight:700,color:"#6b7280",marginBottom:10,letterSpacing:1}}>팀 선택</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
           {TEAMS.map(t=>(
             <button key={t} style={selTeam===t?Sb.chipActive:Sb.chip} onClick={()=>setSelTeam(t)}>{teamNames[t]||t}</button>
@@ -700,17 +700,17 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
     <div style={{paddingBottom:24}}>
       <div style={{background:"linear-gradient(135deg,#1a1f2e,#0d1219)",padding:"36px 24px 28px",borderBottom:"1px solid #1e2535",textAlign:"center"}}>
         <div style={{display:"inline-block",background:"#2563eb",color:"#fff",fontSize:10,fontWeight:700,letterSpacing:3,padding:"3px 10px",borderRadius:4,marginBottom:10}}>TBM</div>
-        <h1 style={{fontSize:20,fontWeight:700,color:"#f0f4ff",marginBottom:4}}>오후 작업전 안전회의</h1>
+        <h1 style={{fontSize:23,fontWeight:700,color:"#f0f4ff",marginBottom:4}}>오후 작업전 안전회의</h1>
         <p style={{fontSize:12,color:"#6b7280",letterSpacing:1}}>Tool Box Meeting</p>
       </div>
       <div style={{margin:"14px 14px 0",background:"linear-gradient(135deg,#1e3a5f,#162d4a)",border:"1px solid #2563eb44",borderRadius:12,padding:"12px 14px"}}>
-        <div style={{fontSize:10,fontWeight:700,color:"#60a5fa",marginBottom:5}}>📢 오늘의 준수사항</div>
-        <p style={{fontSize:13,color:"#bfdbfe",lineHeight:1.6}}>{todayNotice}</p>
+        <div style={{fontSize:13,fontWeight:700,color:"#60a5fa",marginBottom:6}}>📢 오늘의 준수사항</div>
+        <p style={{fontSize:15,color:"#bfdbfe",lineHeight:1.7}}>{todayNotice}</p>
       </div>
       <div style={Sb.card}>
         <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
-          <span style={{fontSize:12,color:"#9ca3af"}}>오늘 제출 현황</span>
-          <span style={{fontSize:12,fontWeight:700,color:"#60a5fa"}}>{todayDone} / {totalActive}</span>
+          <span style={{fontSize:14,color:"#9ca3af"}}>오늘 제출 현황</span>
+          <span style={{fontSize:14,fontWeight:700,color:"#60a5fa"}}>{todayDone} / {totalActive}</span>
         </div>
         <div style={{height:8,background:"#1e2535",borderRadius:4,overflow:"hidden"}}>
           <div style={{height:"100%",width:totalActive?`${(todayDone/totalActive)*100}%`:"0%",background:"linear-gradient(90deg,#2563eb,#3b82f6)",borderRadius:4,transition:"width 0.6s"}}/>
@@ -720,7 +720,7 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
         <button style={Sb.btnPrimary} onClick={()=>setPage("select")}>✅ 체크리스트 제출</button>
         <button style={Sb.btnSecondary} onClick={()=>setPage("admin")}>🔐 관리자 대시보드</button>
       </div>
-      <p style={{textAlign:"center",fontSize:11,color:"#4b5563",marginTop:16}}>
+      <p style={{textAlign:"center",fontSize:13,color:"#4b5563",marginTop:16}}>
         {kstNow().toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric",weekday:"long"})}
       </p>
     </div>
@@ -734,14 +734,14 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
         <span style={Sb.topTitle}>조 선택</span>
       </div>
       <div style={{padding:"16px 14px 0"}}>
-        <div style={{fontSize:11,fontWeight:700,color:"#6b7280",marginBottom:8,letterSpacing:1}}>팀 선택</div>
+        <div style={{fontSize:13,fontWeight:700,color:"#6b7280",marginBottom:10,letterSpacing:1}}>팀 선택</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
           {TEAMS.map(t=><button key={t} style={selTeam===t?Sb.chipActive:Sb.chip} onClick={()=>{setSelTeam(t);setSelGroup("");}}>{tName(t)}</button>)}
         </div>
       </div>
       {selTeam&&(
         <div style={{padding:"14px 14px 0"}}>
-          <div style={{fontSize:11,fontWeight:700,color:"#6b7280",marginBottom:8,letterSpacing:1}}>조 선택</div>
+          <div style={{fontSize:13,fontWeight:700,color:"#6b7280",marginBottom:10,letterSpacing:1}}>조 선택</div>
           <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
             {GROUPS[selTeam].filter(g=>!disabled[g]).map(g=>{
               const done=!!todaySubs[g];
@@ -770,16 +770,16 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
         <span style={Sb.topTitle}>{gName(selGroup)}</span>
       </div>
       <div style={{margin:"12px 14px 0",background:"linear-gradient(135deg,#1e3a5f,#162d4a)",border:"1px solid #2563eb44",borderRadius:12,padding:"12px 14px"}}>
-        <div style={{fontSize:10,fontWeight:700,color:"#60a5fa",marginBottom:5}}>📢 오늘의 준수사항</div>
-        <p style={{fontSize:13,color:"#bfdbfe",lineHeight:1.6}}>{todayNotice}</p>
+        <div style={{fontSize:13,fontWeight:700,color:"#60a5fa",marginBottom:6}}>📢 오늘의 준수사항</div>
+        <p style={{fontSize:15,color:"#bfdbfe",lineHeight:1.7}}>{todayNotice}</p>
       </div>
 
       {QUESTIONS.map(q=>{
         if(q.condition&&answers[q.condition.q]!==q.condition.val) return null;
         return (
           <div key={q.id} style={Sb.card}>
-            <p style={{fontSize:13,fontWeight:600,color:"#e8eaf0",lineHeight:1.6,marginBottom:q.note?4:0}}>Q{q.id}. {q.text}</p>
-            {q.note&&<p style={{fontSize:11,color:"#6b7280",marginBottom:8}}>※ {q.note}</p>}
+            <p style={{fontSize:16,fontWeight:600,color:"#e8eaf0",lineHeight:1.7,marginBottom:q.note?4:0}}>Q{q.id}. {q.text}</p>
+            {q.note&&<p style={{fontSize:13,color:"#6b7280",marginBottom:8}}>※ {q.note}</p>}
             {q.type==="yesno"&&(
               <div style={{display:"flex",gap:8,marginTop:10}}>
                 {["네","아니요"].map(opt=><button key={opt} style={answers[q.id]===opt?Sb.radioActive:Sb.radio} onClick={()=>setAnswers(p=>({...p,[q.id]:opt}))}>{opt}</button>)}
@@ -803,8 +803,8 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
   if(page==="submitted") return (
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",textAlign:"center",padding:"0 20px"}}>
       <div style={{fontSize:68,marginBottom:14}}>✅</div>
-      <h2 style={{fontSize:22,fontWeight:700,color:"#f0f4ff",marginBottom:8}}>제출 완료!</h2>
-      <p style={{fontSize:15,color:"#60a5fa",marginBottom:4}}>{gName(selGroup)}</p>
+      <h2 style={{fontSize:24,fontWeight:700,color:"#f0f4ff",marginBottom:8}}>제출 완료!</h2>
+      <p style={{fontSize:17,color:"#60a5fa",marginBottom:4}}>{gName(selGroup)}</p>
       <p style={{fontSize:12,color:"#6b7280"}}>{kstTimeStr()} 제출</p>
       <button style={{...Sb.btnPrimary,marginTop:28}} onClick={()=>{setSelTeam("");setSelGroup("");setPage("home");}}>홈으로 돌아가기</button>
     </div>
@@ -959,7 +959,7 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
         <div style={{display:"flex",gap:8,padding:"12px 14px 0"}}>
           {[{val:scopeDone,label:"제출 완료",color:"#60a5fa"},{val:scopeTotal-scopeDone,label:"미제출",color:"#ff6b6b"},{val:scopeTotal?Math.round((scopeDone/scopeTotal)*100):0,label:"완료율",color:"#51cf66",sfx:"%"}].map(({val,label,color,sfx})=>(
             <div key={label} style={{flex:1,background:"#161b27",border:"1px solid #1e2535",borderRadius:10,padding:"12px 6px",textAlign:"center"}}>
-              <div style={{fontSize:24,fontWeight:800,color,lineHeight:1}}>{val}{sfx||""}</div>
+              <div style={{fontSize:28,fontWeight:800,color,lineHeight:1}}>{val}{sfx||""}</div>
               <div style={{fontSize:10,color:"#6b7280",marginTop:3}}>{label}</div>
             </div>
           ))}
@@ -1039,10 +1039,10 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
                   if(!isSuper&&isOff) return null;
                   return (
                     <div key={g} style={isOff?{background:"#0a0c10",padding:"8px 3px",textAlign:"center"}:sub?{background:"#0d2b1a",padding:"8px 3px",textAlign:"center",cursor:"pointer"}:{background:"#0f1117",padding:"8px 3px",textAlign:"center",cursor:"pointer"}} onClick={()=>!isOff&&setViewGroup(g)}>
-                      <div style={{fontSize:9,fontWeight:700,color:isOff?"#374151":sub?"#4ade80":"#6b7280",lineHeight:1.3}}>
+                      <div style={{fontSize:11,fontWeight:700,color:isOff?"#374151":sub?"#4ade80":"#6b7280",lineHeight:1.3}}>
                         {gName(g).replace(team+" ","")}
                       </div>
-                      {sub&&!isOff&&<div style={{fontSize:8,color:"#4ade80",marginTop:1}}>{sub.time}</div>}
+                      {sub&&!isOff&&<div style={{fontSize:10,color:"#4ade80",marginTop:1}}>{sub.time}</div>}
                       {isOff&&<div style={{fontSize:8,color:"#374151"}}>OFF</div>}
                       {isSuper&&<button style={{fontSize:8,marginTop:2,padding:"1px 4px",borderRadius:3,border:"none",cursor:"pointer",background:isOff?"#374151":"#1e3a5f",color:isOff?"#6b7280":"#60a5fa"}} onClick={ev=>{ev.stopPropagation();toggleGroup(g);}}>{isOff?"ON":"OFF"}</button>}
                     </div>
