@@ -40,7 +40,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-const TEAMS = ["1","2","3","4","5","6"];
+const TEAMS = ["A","B","C","D","E","F"];
 const GROUPS = {};
 TEAMS.forEach(t => { GROUPS[t] = Array.from({length:15},(_,i)=>`${t} ${i+1}조`); });
 const ALL_GROUPS = TEAMS.flatMap(t => GROUPS[t]);
