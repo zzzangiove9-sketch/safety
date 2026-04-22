@@ -4,6 +4,12 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>TBM 안전회의</title>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#2563eb"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="TBM"/>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
@@ -43,10 +49,10 @@ const TEAM_COLORS = ["#2563eb","#0891b2","#059669","#d97706","#7c3aed","#db2777"
 const QUESTIONS = [
   {id:1, text:"스트레칭을 실시하였습니까?", type:"yesno"},
   {id:2, text:"작업자의 건강상태가 작업에 적합한지 여부를 확인하였습니까?", type:"yesno"},
-  {id:3, text:"비상 대응 절차 및 피난로와 비상물품 보관함, 아이/바다샤워 위치를 동료(작업자)에게 안내하였습니까?", type:"yesno"},
+  {id:3, text:"비상 대응 절차 및 피난로와 비상물품보관함, 아이/바다샤워 위치를 동료(작업자)에게 안내하였습니까?", type:"yesno"},
   {id:4, text:"금일 작업에 사용하는 보호구 및 작업도구를 잘 확인하였습니까?", type:"yesno", note:"보호구 및 작업도구 제품 상태, 착용 상태 양호"},
   {id:5, text:"작업 중 사고 위험(작업 중지권)이 있거나, 상호개입, 개선 제한 사항이 있습니까?", type:"yesno"},
-  {id:"5-1", text:"사고 위험(작업 중지권), 상호 개입, 개선 제한 사항이 있을 시 내용 입력", type:"text", condition:{q:5,val:"네"}, note:'시간,장소,내용,조치사항'},
+  {id:"5-1", text:"사고 위험(작업 중지권), 상호개입, 개선 제한 사항이 있을 시 내용 입력", type:"text", condition:{q:5,val:"네"}, note:'"네" 작성 / "아니요" 공란'},
 ];
 
 const DEFAULT_NOTICES = [
@@ -165,6 +171,69 @@ const Sb = {
   nameInput:{width:"100%",padding:"9px 10px",background:"#0f1117",border:"1px solid #1e2535",borderRadius:6,color:"#e8eaf0",fontSize:13},
 };
 
+
+// ── 팀 이름 관리 페이지 ─────────────────────────────────────
+function TeamNamesPage({teamNames, onSave, onBack}) {
+  const [editNames, setEditNames] = useState({...teamNames});
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    await onSave(editNames);
+    setSaving(false);
+    setSaved(true);
+    setTimeout(()=>setSaved(false), 2000);
+  };
+
+  return (
+    <div style={{paddingBottom:40}}>
+      <div style={Sb.topBar}>
+        <button style={Sb.backBtn} onClick={onBack}>← 뒤로</button>
+        <span style={Sb.topTitle}>팀 이름 관리</span>
+      </div>
+      <div style={{...Sb.card,background:"#1a1f2e",border:"1px solid #2563eb44"}}>
+        <p style={{fontSize:12,color:"#60a5fa",fontWeight:700,marginBottom:4}}>✏️ 최종 관리자 전용</p>
+        <p style={{fontSize:12,color:"#9ca3af",lineHeight:1.6}}>
+          팀 이름을 자유롭게 바꿀 수 있어요.<br/>
+          비우면 기본 이름으로 표시돼요.
+        </p>
+      </div>
+      <div style={Sb.card}>
+        <p style={{fontSize:13,fontWeight:700,color:"#f0f4ff",marginBottom:12}}>팀 이름 편집</p>
+        {TEAMS.map((teamKey, idx) => (
+          <div key={teamKey} style={{marginBottom:12}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
+              <span style={{fontSize:11,color:"#6b7280",fontWeight:700,minWidth:36}}>팀 {idx+1}</span>
+              <span style={{fontSize:10,color:"#374151"}}>기본: {teamKey}</span>
+            </div>
+            <div style={{display:"flex",gap:6}}>
+              <input
+                style={{...Sb.nameInput,flex:1}}
+                type="text"
+                placeholder={teamKey}
+                value={editNames[teamKey]||""}
+                onChange={e=>setEditNames(p=>({...p,[teamKey]:e.target.value}))}
+              />
+              {editNames[teamKey] && (
+                <button style={{...Sb.smallBtn,padding:"6px 8px",color:"#f87171"}}
+                  onClick={()=>setEditNames(p=>{const u={...p};delete u[teamKey];return u;})}>✕</button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{padding:"14px 14px 0",display:"flex",flexDirection:"column",gap:10}}>
+        <button style={{...Sb.btnPrimary,background:saved?"linear-gradient(135deg,#059669,#047857)":undefined}}
+          onClick={handleSave} disabled={saving}>
+          {saving?"저장 중...":saved?"✅ 저장 완료!":"💾 저장"}
+        </button>
+        <button style={Sb.btnSecondary} onClick={onBack}>← 대시보드로 돌아가기</button>
+      </div>
+    </div>
+  );
+}
+
 // ── 조 이름 관리 페이지 ───────────────────────────────────────
 function GroupNamesPage({groupNames, onSave, onBack}) {
   // 팀별로 편집용 임시 상태
@@ -213,14 +282,14 @@ function GroupNamesPage({groupNames, onSave, onBack}) {
         <div style={{fontSize:11,fontWeight:700,color:"#6b7280",marginBottom:8,letterSpacing:1}}>팀 선택</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
           {TEAMS.map(t=>(
-            <button key={t} style={selTeam===t?Sb.chipActive:Sb.chip} onClick={()=>setSelTeam(t)}>{t}</button>
+            <button key={t} style={selTeam===t?Sb.chipActive:Sb.chip} onClick={()=>setSelTeam(t)}>{teamNames[t]||t}</button>
           ))}
         </div>
       </div>
 
       {/* 선택된 팀의 조 이름 편집 */}
       <div style={Sb.card}>
-        <p style={{fontSize:13,fontWeight:700,color:"#f0f4ff",marginBottom:12}}>{selTeam} — 조 이름 편집</p>
+        <p style={{fontSize:13,fontWeight:700,color:"#f0f4ff",marginBottom:12}}>{teamNames[selTeam]||selTeam} — 조 이름 편집</p>
         {GROUPS[selTeam].map((groupKey, idx) => {
           const defaultName = groupKey;
           const customName = editNames[groupKey] || "";
@@ -413,7 +482,9 @@ function App() {
   const [noticeEdit, setNoticeEdit] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showGroupNames, setShowGroupNames] = useState(false);
+  const [showTeamNames, setShowTeamNames] = useState(false);
   const [showExcel, setShowExcel] = useState(false);
+  const [teamNames, setTeamNames] = useState({});
 
   // 조 표시 이름 헬퍼
   const gName = (groupKey) => groupNames[groupKey] || groupKey;
@@ -431,6 +502,7 @@ function App() {
         setDisabled(d.disabledGroups||{});
         setNotices(d.customNotices||{});
         setGroupNames(d.groupNames||{});
+        setTeamNames(d.teamNames||{});
       }
     });
     return ()=>{u1();u2();};
@@ -456,8 +528,22 @@ function App() {
       disabledGroups: disabled,
       customNotices: notices,
       groupNames: newNames,
+      teamNames: teamNames,
     });
   };
+
+  const saveTeamNames = async (newNames) => {
+    setTeamNames(newNames);
+    await db.collection("settings").doc("config").set({
+      disabledGroups: disabled,
+      customNotices: notices,
+      groupNames: groupNames,
+      teamNames: newNames,
+    });
+  };
+
+  // 팀 표시 이름 헬퍼
+  const tName = (teamKey) => teamNames[teamKey] || teamKey;
 
   const todayNotice = notices[todayKST()] || DEFAULT_NOTICES[getDayOfYear()%DEFAULT_NOTICES.length];
   const todaySubs = allSubs[todayKST()]||{};
@@ -467,7 +553,6 @@ function App() {
   const totalActive = activeGroups.length;
 
   const handleSubmit = async () => {
-    if(!uName.trim()) return alert("이름을 입력해주세요.");
     for(const q of QUESTIONS) {
       if(q.type==="yesno"&&!answers[q.id]) return alert("모든 항목을 선택해주세요.");
       if(q.type==="text"&&q.condition&&answers[q.condition.q]===q.condition.val&&!answers[q.id]?.trim())
@@ -475,7 +560,7 @@ function App() {
     }
     setSubmitting(true);
     try {
-      await saveSub(todayKST(), selGroup, {team:selTeam,group:selGroup,name:uName,answers,time:kstTimeStr()});
+      await saveSub(todayKST(), selGroup, {team:selTeam,group:selGroup,answers,time:kstTimeStr()});
       setPage("submitted");
     } catch(e) { alert("저장 실패: "+e.message); }
     finally { setSubmitting(false); }
@@ -495,6 +580,7 @@ function App() {
       disabledGroups: u,
       customNotices: notices,
       groupNames: groupNames,
+      teamNames: teamNames,
     });
   };
 
@@ -518,12 +604,83 @@ function App() {
     </div>
   );
 
-  // ── 조 이름 관리 페이지 ──────────────────────────────────────
+  
+// ── 팀 이름 관리 페이지 ─────────────────────────────────────
+function TeamNamesPage({teamNames, onSave, onBack}) {
+  const [editNames, setEditNames] = useState({...teamNames});
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    await onSave(editNames);
+    setSaving(false);
+    setSaved(true);
+    setTimeout(()=>setSaved(false), 2000);
+  };
+
+  return (
+    <div style={{paddingBottom:40}}>
+      <div style={Sb.topBar}>
+        <button style={Sb.backBtn} onClick={onBack}>← 뒤로</button>
+        <span style={Sb.topTitle}>팀 이름 관리</span>
+      </div>
+      <div style={{...Sb.card,background:"#1a1f2e",border:"1px solid #2563eb44"}}>
+        <p style={{fontSize:12,color:"#60a5fa",fontWeight:700,marginBottom:4}}>✏️ 최종 관리자 전용</p>
+        <p style={{fontSize:12,color:"#9ca3af",lineHeight:1.6}}>
+          팀 이름을 자유롭게 바꿀 수 있어요.<br/>
+          비우면 기본 이름으로 표시돼요.
+        </p>
+      </div>
+      <div style={Sb.card}>
+        <p style={{fontSize:13,fontWeight:700,color:"#f0f4ff",marginBottom:12}}>팀 이름 편집</p>
+        {TEAMS.map((teamKey, idx) => (
+          <div key={teamKey} style={{marginBottom:12}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
+              <span style={{fontSize:11,color:"#6b7280",fontWeight:700,minWidth:36}}>팀 {idx+1}</span>
+              <span style={{fontSize:10,color:"#374151"}}>기본: {teamKey}</span>
+            </div>
+            <div style={{display:"flex",gap:6}}>
+              <input
+                style={{...Sb.nameInput,flex:1}}
+                type="text"
+                placeholder={teamKey}
+                value={editNames[teamKey]||""}
+                onChange={e=>setEditNames(p=>({...p,[teamKey]:e.target.value}))}
+              />
+              {editNames[teamKey] && (
+                <button style={{...Sb.smallBtn,padding:"6px 8px",color:"#f87171"}}
+                  onClick={()=>setEditNames(p=>{const u={...p};delete u[teamKey];return u;})}>✕</button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{padding:"14px 14px 0",display:"flex",flexDirection:"column",gap:10}}>
+        <button style={{...Sb.btnPrimary,background:saved?"linear-gradient(135deg,#059669,#047857)":undefined}}
+          onClick={handleSave} disabled={saving}>
+          {saving?"저장 중...":saved?"✅ 저장 완료!":"💾 저장"}
+        </button>
+        <button style={Sb.btnSecondary} onClick={onBack}>← 대시보드로 돌아가기</button>
+      </div>
+    </div>
+  );
+}
+
+// ── 조 이름 관리 페이지 ──────────────────────────────────────
   if(showGroupNames && admin?.role==="super") return (
     <GroupNamesPage
       groupNames={groupNames}
       onSave={saveGroupNames}
       onBack={()=>setShowGroupNames(false)}
+    />
+  );
+
+  if(showTeamNames && admin?.role==="super") return (
+    <TeamNamesPage
+      teamNames={teamNames}
+      onSave={saveTeamNames}
+      onBack={()=>setShowTeamNames(false)}
     />
   );
 
@@ -579,7 +736,7 @@ function App() {
       <div style={{padding:"16px 14px 0"}}>
         <div style={{fontSize:11,fontWeight:700,color:"#6b7280",marginBottom:8,letterSpacing:1}}>팀 선택</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
-          {TEAMS.map(t=><button key={t} style={selTeam===t?Sb.chipActive:Sb.chip} onClick={()=>{setSelTeam(t);setSelGroup("");}}>{t}</button>)}
+          {TEAMS.map(t=><button key={t} style={selTeam===t?Sb.chipActive:Sb.chip} onClick={()=>{setSelTeam(t);setSelGroup("");}}>{tName(t)}</button>)}
         </div>
       </div>
       {selTeam&&(
@@ -616,10 +773,7 @@ function App() {
         <div style={{fontSize:10,fontWeight:700,color:"#60a5fa",marginBottom:5}}>📢 오늘의 준수사항</div>
         <p style={{fontSize:13,color:"#bfdbfe",lineHeight:1.6}}>{todayNotice}</p>
       </div>
-      <div style={Sb.card}>
-        <p style={{fontSize:13,fontWeight:600,color:"#e8eaf0",marginBottom:8}}>진행자 이름을 입력해주세요</p>
-        <input style={{...Sb.input,marginBottom:0}} type="text" placeholder="이름 입력" value={uName} onChange={e=>setUName(e.target.value)}/>
-      </div>
+
       {QUESTIONS.map(q=>{
         if(q.condition&&answers[q.condition.q]!==q.condition.val) return null;
         return (
@@ -651,7 +805,6 @@ function App() {
       <div style={{fontSize:68,marginBottom:14}}>✅</div>
       <h2 style={{fontSize:22,fontWeight:700,color:"#f0f4ff",marginBottom:8}}>제출 완료!</h2>
       <p style={{fontSize:15,color:"#60a5fa",marginBottom:4}}>{gName(selGroup)}</p>
-      <p style={{fontSize:13,color:"#9ca3af",marginBottom:4}}>{uName}</p>
       <p style={{fontSize:12,color:"#6b7280"}}>{kstTimeStr()} 제출</p>
       <button style={{...Sb.btnPrimary,marginTop:28}} onClick={()=>{setSelTeam("");setSelGroup("");setPage("home");}}>홈으로 돌아가기</button>
     </div>
@@ -730,7 +883,7 @@ function App() {
     const scopeDone=scopeGroups.filter(g=>dashSubs[g]).length;
     const scopeTotal=scopeGroups.length;
     const qs=qSummary(dashSubs);
-    const teamCounts=TEAMS.map((t,i)=>({label:t,val:GROUPS[t].filter(g=>!disabled[g]&&dashSubs[g]).length,color:TEAM_COLORS[i]}));
+    const teamCounts=TEAMS.map((t,i)=>({label:tName(t),val:GROUPS[t].filter(g=>!disabled[g]&&dashSubs[g]).length,color:TEAM_COLORS[i]}));
 
     return (
       <div style={{paddingBottom:40}}>
@@ -748,8 +901,13 @@ function App() {
         {/* ── 관리자 버튼 영역 ── */}
         <div style={{padding:"12px 14px 0",display:"flex",flexDirection:"column",gap:8}}>
           {isSuper&&(
-            <button style={{...Sb.btnGreen}} onClick={()=>setShowGroupNames(true)}>
-              ✏️ 조 이름 관리 (팀별 1~15조 이름 변경)
+            <button style={{...Sb.btnGreen}} onClick={()=>setShowTeamNames(true)}>
+              ✏️ 팀 이름 관리
+            </button>
+          )}
+          {isSuper&&(
+            <button style={{...Sb.btnGreen,background:"linear-gradient(135deg,#0e7490,#0891b2)"}} onClick={()=>setShowGroupNames(true)}>
+              ✏️ 조 이름 관리 (1~15조 이름 변경)
             </button>
           )}
           <button style={{...Sb.btnGreen,background:"linear-gradient(135deg,#1d4ed8,#1e40af)"}} onClick={()=>setShowExcel(true)}>
@@ -782,13 +940,13 @@ function App() {
                     const u={...notices,[todayKST()]:noticeInput.trim()};
                     if(!noticeInput.trim()) delete u[todayKST()];
                     setNotices(u);
-                    await db.collection("settings").doc("config").set({disabledGroups:disabled,customNotices:u,groupNames:groupNames});
+                    await db.collection("settings").doc("config").set({disabledGroups:disabled,customNotices:u,groupNames:groupNames,teamNames:teamNames});
                     setNoticeEdit(false);
                   }}>저장</button>
                   <button style={{...Sb.smallBtn,flex:1}} onClick={async()=>{
                     const u={...notices}; delete u[todayKST()];
                     setNotices(u);
-                    await db.collection("settings").doc("config").set({disabledGroups:disabled,customNotices:u,groupNames:groupNames});
+                    await db.collection("settings").doc("config").set({disabledGroups:disabled,customNotices:u,groupNames:groupNames,teamNames:teamNames});
                     setNoticeEdit(false);
                   }}>기본값으로</button>
                 </div>
@@ -815,7 +973,7 @@ function App() {
         {/* 팀 필터 */}
         {isSuper&&(
           <div style={{display:"flex",flexWrap:"wrap",gap:6,padding:"10px 14px 0"}}>
-            {["전체",...TEAMS].map(t=><button key={t} style={filterTeam===t?Sb.chipActive:Sb.chip} onClick={()=>setFilterTeam(t)}>{t}</button>)}
+            {["전체",...TEAMS].map(t=><button key={t} style={filterTeam===t?Sb.chipActive:Sb.chip} onClick={()=>setFilterTeam(t)}>{t==="전체"?"전체":tName(t)}</button>)}
           </div>
         )}
 
@@ -872,7 +1030,7 @@ function App() {
           return (
             <div key={team} style={{margin:"12px 14px 0",background:"#161b27",border:"1px solid #1e2535",borderRadius:12,overflow:"hidden"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",borderBottom:"1px solid #1e2535",background:"#1a1f2e"}}>
-                <span style={{fontSize:13,fontWeight:700,color:"#f0f4ff"}}>{team}</span>
+                <span style={{fontSize:13,fontWeight:700,color:"#f0f4ff"}}>{tName(team)}</span>
                 <span style={{fontSize:12,fontWeight:700,color:"#60a5fa"}}>{done}/{tot}</span>
               </div>
               <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:1,background:"#1e2535"}}>
@@ -901,6 +1059,13 @@ function App() {
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+<script>
+if("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js");
+  });
+}
 </script>
 </body>
 </html>
