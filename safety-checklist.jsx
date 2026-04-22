@@ -67,12 +67,12 @@ const DEFAULT_NOTICES = [
 
 const ADMIN_ACCOUNTS = [
   {id:"admin",  password:"260701", role:"super", label:"최종 관리자",      team:null},
-  {id:"team1",  password:"1111",   role:"team",  label:"라인상부 관리자",  team:"라인상부"},
-  {id:"team2",  password:"2222",   role:"team",  label:"라인하부 관리자",  team:"라인하부"},
-  {id:"team3",  password:"3333",   role:"team",  label:"V2 관리자",       team:"V2"},
-  {id:"team4",  password:"4444",   role:"team",  label:"EDS 관리자",      team:"EDS"},
-  {id:"team5",  password:"5555",   role:"team",  label:"스막 관리자",     team:"스막"},
-  {id:"team6",  password:"6666",   role:"team",  label:"스막교대 관리자", team:"스막교대"},
+  {id:"team1",  password:"1111",   role:"team",  label:"A",  team:"A"},
+  {id:"team2",  password:"2222",   role:"team",  label:"B",  team:"B"},
+  {id:"team3",  password:"3333",   role:"team",  label:"C",       team:"C"},
+  {id:"team4",  password:"4444",   role:"team",  label:"D",      team:"D"},
+  {id:"team5",  password:"5555",   role:"team",  label:"E",     team:"E"},
+  {id:"team6",  password:"6666",   role:"team",  label:"F", team:"F"},
 ];
 
 const kstNow = () => new Date(new Date().getTime() + 9*60*60*1000);
