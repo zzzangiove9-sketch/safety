@@ -249,33 +249,26 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
   );
 }
 
-// ── 조 이름 관리 페이지 ───────────────────────────────────────
-function GroupNamesPage({groupNames, onSave, onBack}) {
-  // 팀별로 편집용 임시 상태
+// ── 조 이름 관리 페이지 ─────────────────────────────────────
+function GroupNamesPage({groupNames, teamNames, onSave, onBack}) {
   const [editNames, setEditNames] = useState({...groupNames});
   const [selTeam, setSelTeam] = useState(TEAMS[0]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const handleChange = (groupKey, val) => {
-    setEditNames(p => ({...p, [groupKey]: val}));
-  };
+  const tLabel = (t) => (teamNames && teamNames[t]) ? teamNames[t] : t;
 
   const handleSave = async () => {
     setSaving(true);
-    await onSave(editNames);
+    try { await onSave(editNames); } catch(e) { alert("저장 실패: "+e.message); }
     setSaving(false);
     setSaved(true);
-    setTimeout(()=>setSaved(false), 2000);
+    setTimeout(()=>setSaved(false), 2500);
   };
 
-  const handleReset = (groupKey) => {
-    setEditNames(p => {
-      const u = {...p};
-      delete u[groupKey];
-      return u;
-    });
-  };
+  const saveBtnBg = saved
+    ? "linear-gradient(135deg,#059669,#047857)"
+    : "linear-gradient(135deg,#2563eb,#1d4ed8)";
 
   return (
     <div style={{paddingBottom:40}}>
@@ -283,60 +276,54 @@ function GroupNamesPage({groupNames, onSave, onBack}) {
         <button style={Sb.backBtn} onClick={onBack}>← 뒤로</button>
         <span style={Sb.topTitle}>조 이름 관리</span>
       </div>
-
       <div style={{...Sb.card,background:"#1a1f2e",border:"1px solid #2563eb44"}}>
         <p style={{fontSize:16,color:"#60a5fa",fontWeight:700,marginBottom:4}}>✏️ 최종 관리자 전용</p>
-        <p style={{fontSize:16,color:"#9ca3af",lineHeight:1.6}}>
-          각 조의 이름을 자유롭게 바꿀 수 있어요.<br/>
-          비우면 기본 이름(예: 라인상부 1조)으로 표시돼요.
-        </p>
+        <p style={{fontSize:15,color:"#9ca3af",lineHeight:1.7}}>각 조 이름을 자유롭게 바꿀 수 있어요. 비우면 기본 이름으로 표시돼요.</p>
       </div>
-
-      {/* 팀 탭 */}
-      <div style={{padding:"12px 14px 0"}}>
-        <div style={{fontSize:17,fontWeight:700,color:"#6b7280",marginBottom:10,letterSpacing:1}}>팀 선택</div>
-        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+      <div style={{padding:"14px 14px 0"}}>
+        <div style={{fontSize:15,fontWeight:700,color:"#6b7280",marginBottom:10}}>팀 선택</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
           {TEAMS.map(t=>(
-            <button key={t} style={selTeam===t?Sb.chipActive:Sb.chip} onClick={()=>setSelTeam(t)}>{teamNames[t]||t}</button>
+            <button key={t}
+              style={selTeam===t ? Sb.chipActive : Sb.chip}
+              onClick={()=>setSelTeam(t)}>
+              {tLabel(t)}
+            </button>
           ))}
         </div>
       </div>
-
-      {/* 선택된 팀의 조 이름 편집 */}
       <div style={Sb.card}>
-        <p style={{fontSize:19,fontWeight:700,color:"#f0f4ff",marginBottom:12}}>{selTeam} — 조 이름 편집</p>
-        {GROUPS[selTeam].map((groupKey, idx) => {
-          const defaultName = groupKey;
-          const customName = editNames[groupKey] || "";
-          return (
-            <div key={groupKey} style={{marginBottom:10}}>
-              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
-                <span style={{fontSize:15,color:"#6b7280",minWidth:32,fontWeight:700}}>{idx+1}조</span>
-                <span style={{fontSize:14,color:"#374151"}}>기본: {defaultName}</span>
-              </div>
-              <div style={{display:"flex",gap:6}}>
-                <input
-                  style={{...Sb.nameInput,flex:1}}
-                  type="text"
-                  placeholder={defaultName}
-                  value={customName}
-                  onChange={e=>handleChange(groupKey, e.target.value)}
-                />
-                {editNames[groupKey] && (
-                  <button style={{...Sb.smallBtn,padding:"6px 8px",color:"#f87171"}} onClick={()=>handleReset(groupKey)}>✕</button>
-                )}
-              </div>
+        <p style={{fontSize:17,fontWeight:700,color:"#f0f4ff",marginBottom:14}}>{tLabel(selTeam)} — 조 이름 편집</p>
+        {GROUPS[selTeam].map((groupKey, i) => (
+          <div key={groupKey} style={{marginBottom:12}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
+              <span style={{fontSize:15,color:"#6b7280",fontWeight:700,minWidth:36}}>{i+1}조</span>
+              <span style={{fontSize:13,color:"#4b5563"}}>기본: {groupKey}</span>
             </div>
-          );
-        })}
+            <div style={{display:"flex",gap:6}}>
+              <input
+                style={{...Sb.nameInput,flex:1}}
+                type="text"
+                placeholder={groupKey}
+                value={editNames[groupKey]||""}
+                onChange={e=>setEditNames(p=>({...p,[groupKey]:e.target.value}))}
+              />
+              {editNames[groupKey] ? (
+                <button
+                  style={{...Sb.smallBtn,padding:"6px 10px",color:"#f87171"}}
+                  onClick={()=>setEditNames(p=>{const u={...p};delete u[groupKey];return u;})}>
+                  ✕
+                </button>
+              ) : null}
+            </div>
+          </div>
+        ))}
       </div>
-
       <div style={{padding:"14px 14px 0",display:"flex",flexDirection:"column",gap:10}}>
-        <button style={{
-            width:"100%",padding:15,border:"none",borderRadius:12,fontSize:21,fontWeight:700,cursor:"pointer",
-            background:saved?"linear-gradient(135deg,#059669,#047857)":"linear-gradient(135deg,#2563eb,#1d4ed8)",
-            color:"#fff",opacity:saving?0.7:1
-          }} onClick={handleSave} disabled={saving}>
+        <button
+          style={{width:"100%",padding:15,border:"none",borderRadius:12,fontSize:19,fontWeight:700,cursor:"pointer",color:"#fff",background:saveBtnBg,opacity:saving?0.7:1}}
+          onClick={handleSave}
+          disabled={saving}>
           {saving?"저장 중...":saved?"✅ 저장 완료!":"💾 전체 저장"}
         </button>
         <button style={Sb.btnSecondary} onClick={onBack}>← 대시보드로 돌아가기</button>
@@ -345,10 +332,9 @@ function GroupNamesPage({groupNames, onSave, onBack}) {
   );
 }
 
-
 // ── 엑셀 다운로드 페이지 ─────────────────────────────────────
 function ExcelPage({allSubs, groupNames, adminTeam, isSuper, onBack}) {
-  const gName = g => groupNames[g] || g;
+  const gName = g => (groupNames && groupNames[g]) ? groupNames[g] : (g || "");
   const kNow = kstNow();
   const firstOfMonth = `${kNow.getUTCFullYear()}-${String(kNow.getUTCMonth()+1).padStart(2,"0")}-01`;
   const [startDate, setStartDate] = useState(firstOfMonth);
@@ -506,7 +492,7 @@ function App() {
   const [teamNames, setTeamNames] = useState({});
 
   // 조 표시 이름 헬퍼
-  const gName = (groupKey) => groupNames[groupKey] || groupKey;
+  const gName = (groupKey) => (groupNames && groupNames[groupKey]) ? groupNames[groupKey] : (groupKey || "");
 
   useEffect(() => {
     const u1 = db.collection("submissions").onSnapshot(snap => {
@@ -562,7 +548,7 @@ function App() {
   };
 
   // 팀 표시 이름 헬퍼
-  const tName = (teamKey) => teamNames[teamKey] || teamKey;
+  const tName = (teamKey) => (teamNames && teamNames[teamKey]) ? teamNames[teamKey] : (teamKey || "");
 
   const todayNotice = notices[todayKST()] || DEFAULT_NOTICES[getDayOfYear()%DEFAULT_NOTICES.length];
   const todaySubs = allSubs[todayKST()]||{};
@@ -705,6 +691,7 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
   if(showGroupNames && admin?.role==="super") return (
     <GroupNamesPage
       groupNames={groupNames}
+      teamNames={teamNames}
       onSave={saveGroupNames}
       onBack={()=>setShowGroupNames(false)}
     />
@@ -1084,7 +1071,25 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
   return null;
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = {error: null}; }
+  static getDerivedStateFromError(e) { return {error: e}; }
+  render() {
+    if(this.state.error) return (
+      <div style={{padding:30,color:"#f87171",fontFamily:"sans-serif",textAlign:"center",paddingTop:80}}>
+        <div style={{fontSize:48,marginBottom:16}}>⚠️</div>
+        <p style={{fontSize:18,fontWeight:700,marginBottom:12}}>오류가 발생했어요</p>
+        <p style={{fontSize:14,color:"#9ca3af",marginBottom:24}}>{""+this.state.error}</p>
+        <button style={{padding:"12px 24px",background:"#2563eb",color:"#fff",border:"none",borderRadius:8,fontSize:16,cursor:"pointer"}}
+          onClick={()=>window.location.reload()}>새로고침</button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <ErrorBoundary><App/></ErrorBoundary>
+);
 </script>
 <script>
 if("serviceWorker" in navigator) {
