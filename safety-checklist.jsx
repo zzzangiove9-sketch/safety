@@ -171,7 +171,6 @@ const Sb = {
   nameInput:{width:"100%",padding:"11px 12px",background:"#0f1117",border:"1px solid #1e2535",borderRadius:6,color:"#e8eaf0",fontSize:19},
 };
 
-
 // ── 팀 이름 관리 페이지 ─────────────────────────────────────
 function TeamNamesPage({teamNames, onSave, onBack}) {
   const [editNames, setEditNames] = useState({...teamNames});
@@ -474,7 +473,7 @@ function App() {
   const [allSubs, setAllSubs] = useState({});
   const [disabled, setDisabled] = useState({});
   const [notices, setNotices] = useState({});
-  const [groupNames, setGroupNames] = useState({}); // 커스텀 조 이름
+  const [groupNames, setGroupNames] = useState({});
   const [adminId, setAdminId] = useState("");
   const [adminPw, setAdminPw] = useState("");
   const [adminErr, setAdminErr] = useState(false);
@@ -491,7 +490,6 @@ function App() {
   const [showExcel, setShowExcel] = useState(false);
   const [teamNames, setTeamNames] = useState({});
 
-  // 조 표시 이름 헬퍼
   const gName = (groupKey) => (groupNames && groupNames[groupKey]) ? groupNames[groupKey] : (groupKey || "");
 
   useEffect(() => {
@@ -517,16 +515,6 @@ function App() {
     await db.collection("submissions").doc(dateKey).set({[groupName]:data},{merge:true});
   };
 
-  const saveSettings = async (patch) => {
-    // merge:true를 사용하지 않아야 키 삭제가 Firestore에 정상 반영됨
-    const fullDoc = {
-      disabledGroups: patch.disabledGroups !== undefined ? patch.disabledGroups : disabled,
-      customNotices:  patch.customNotices  !== undefined ? patch.customNotices  : notices,
-      groupNames:     patch.groupNames     !== undefined ? patch.groupNames     : groupNames,
-    };
-    await db.collection("settings").doc("config").set(fullDoc);
-  };
-
   const saveGroupNames = async (newNames) => {
     setGroupNames(newNames);
     await db.collection("settings").doc("config").set({
@@ -547,7 +535,6 @@ function App() {
     });
   };
 
-  // 팀 표시 이름 헬퍼
   const tName = (teamKey) => (teamNames && teamNames[teamKey]) ? teamNames[teamKey] : (teamKey || "");
 
   const todayNotice = notices[todayKST()] || DEFAULT_NOTICES[getDayOfYear()%DEFAULT_NOTICES.length];
@@ -609,85 +596,7 @@ function App() {
     </div>
   );
 
-  
-// ── 팀 이름 관리 페이지 ─────────────────────────────────────
-function TeamNamesPage({teamNames, onSave, onBack}) {
-  const [editNames, setEditNames] = useState({...teamNames});
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  const handleSave = async () => {
-    setSaving(true);
-    try { await onSave(editNames); } catch(e) { alert("저장 실패: "+e.message); }
-    setSaving(false);
-    setSaved(true);
-    setTimeout(()=>setSaved(false), 2500);
-  };
-
-  const saveBtnStyle = {
-    width:"100%", padding:15, border:"none", borderRadius:12,
-    fontSize:21, fontWeight:700, cursor:"pointer",
-    background: saved
-      ? "linear-gradient(135deg,#059669,#047857)"
-      : "linear-gradient(135deg,#2563eb,#1d4ed8)",
-    color:"#fff",
-    opacity: saving ? 0.7 : 1,
-  };
-
-  return (
-    <div style={{paddingBottom:40}}>
-      <div style={Sb.topBar}>
-        <button style={Sb.backBtn} onClick={onBack}>← 뒤로</button>
-        <span style={Sb.topTitle}>팀 이름 관리</span>
-      </div>
-      <div style={{...Sb.card, background:"#1a1f2e", border:"1px solid #2563eb44"}}>
-        <p style={{fontSize:18,color:"#60a5fa",fontWeight:700,marginBottom:4}}>✏️ 최종 관리자 전용</p>
-        <p style={{fontSize:17,color:"#9ca3af",lineHeight:1.7}}>
-          팀 이름을 자유롭게 바꿀 수 있어요.
-          비우면 기본 이름으로 표시돼요.
-        </p>
-      </div>
-      <div style={Sb.card}>
-        <p style={{fontSize:19,fontWeight:700,color:"#f0f4ff",marginBottom:14}}>팀 이름 편집</p>
-        {TEAMS.map((teamKey, i) => (
-          <div key={teamKey} style={{marginBottom:14}}>
-            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
-              <span style={{fontSize:17,color:"#6b7280",fontWeight:700,minWidth:40}}>팀 {i+1}</span>
-              <span style={{fontSize:16,color:"#4b5563"}}>기본값: {teamKey}</span>
-            </div>
-            <div style={{display:"flex",gap:6}}>
-              <input
-                style={{...Sb.nameInput, flex:1}}
-                type="text"
-                placeholder={teamKey}
-                value={editNames[teamKey]||""}
-                onChange={e => {
-                  const v = e.target.value;
-                  setEditNames(p => ({...p, [teamKey]: v}));
-                }}
-              />
-              {editNames[teamKey] ? (
-                <button
-                  style={{...Sb.smallBtn, padding:"6px 10px", color:"#f87171"}}
-                  onClick={()=>setEditNames(p=>{const u={...p}; delete u[teamKey]; return u;})}>
-                  ✕
-                </button>
-              ) : null}
-            </div>
-          </div>
-        ))}
-      </div>
-      <div style={{padding:"14px 14px 0", display:"flex", flexDirection:"column", gap:10}}>
-        <button style={saveBtnStyle} onClick={handleSave} disabled={saving}>
-          {saving ? "저장 중..." : saved ? "✅ 저장 완료!" : "💾 저장"}
-        </button>
-        <button style={Sb.btnSecondary} onClick={onBack}>← 대시보드로 돌아가기</button>
-      </div>
-    </div>
-  );
-}
-
-// ── 조 이름 관리 페이지 ──────────────────────────────────────
+  // ── 조 이름 관리 페이지 ──────────────────────────────────────
   if(showGroupNames && admin?.role==="super") return (
     <GroupNamesPage
       groupNames={groupNames}
@@ -714,7 +623,6 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
       onBack={()=>setShowExcel(false)}
     />
   );
-
 
   // ── HOME ────────────────────────────────────────────────────
   if(page==="home") return (
@@ -794,7 +702,6 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
         <div style={{fontSize:17,fontWeight:700,color:"#60a5fa",marginBottom:6}}>📢 오늘의 준수사항</div>
         <p style={{fontSize:19,color:"#bfdbfe",lineHeight:1.7}}>{todayNotice}</p>
       </div>
-
       {QUESTIONS.map(q=>{
         if(q.condition&&answers[q.condition.q]!==q.condition.val) return null;
         return (
@@ -845,7 +752,6 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
         <input style={Sb.input} type="password" placeholder="비밀번호" value={adminPw} onChange={e=>setAdminPw(e.target.value)} onKeyDown={e=>e.key==="Enter"&&loginAdmin()}/>
         {adminErr&&<p style={{color:"#ff4d4d",fontSize:16,marginBottom:8}}>ID 또는 비밀번호가 올바르지 않습니다.</p>}
         <button style={Sb.btnPrimary} onClick={loginAdmin}>로그인</button>
-        
       </div>
     </div>
   );
@@ -911,7 +817,6 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
           <span style={{marginLeft:"auto",fontSize:14,color:"#4ade80",background:"#0d2b1a",padding:"2px 7px",borderRadius:4}}>🔴 실시간</span>
         </div>
 
-        {/* ── 관리자 버튼 영역 ── */}
         <div style={{padding:"12px 14px 0",display:"flex",flexDirection:"column",gap:8}}>
           {isSuper&&(
             <button style={{...Sb.btnGreen}} onClick={()=>setShowTeamNames(true)}>
@@ -928,7 +833,6 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
           </button>
         </div>
 
-        {/* 날짜 */}
         <div style={{padding:"12px 14px 0"}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <button style={{padding:"8px 14px",background:"#1e3a5f",border:"1px solid #2563eb55",borderRadius:8,color:"#60a5fa",fontSize:16,fontWeight:700,cursor:"pointer"}} onClick={()=>setShowCal(true)}>📅 날짜 선택</button>
@@ -937,7 +841,6 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
           {dashDate!==todayKST()&&<button style={{...Sb.smallBtn,marginTop:7}} onClick={()=>setDashDate(todayKST())}>오늘로 돌아가기</button>}
         </div>
 
-        {/* 준수사항 */}
         {isSuper&&(
           <div style={Sb.card}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:7}}>
@@ -968,7 +871,6 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
           </div>
         )}
 
-        {/* 통계 */}
         <div style={{display:"flex",gap:8,padding:"12px 14px 0"}}>
           {[{val:scopeDone,label:"제출 완료",color:"#60a5fa"},{val:scopeTotal-scopeDone,label:"미제출",color:"#ff6b6b"},{val:scopeTotal?Math.round((scopeDone/scopeTotal)*100):0,label:"완료율",color:"#51cf66",sfx:"%"}].map(({val,label,color,sfx})=>(
             <div key={label} style={{flex:1,background:"#161b27",border:"1px solid #1e2535",borderRadius:10,padding:"12px 6px",textAlign:"center"}}>
@@ -983,20 +885,17 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
           </div>
         </div>
 
-        {/* 팀 필터 */}
         {isSuper&&(
           <div style={{display:"flex",flexWrap:"wrap",gap:6,padding:"10px 14px 0"}}>
             {["전체",...TEAMS].map(t=><button key={t} style={filterTeam===t?Sb.chipActive:Sb.chip} onClick={()=>setFilterTeam(t)}>{t==="전체"?"전체":tName(t)}</button>)}
           </div>
         )}
 
-        {/* 막대그래프 */}
         <div style={{margin:"12px 14px 0",background:"#161b27",border:"1px solid #1e2535",borderRadius:12,overflow:"hidden"}}>
           <div style={Sb.sectionHdr}>📊 팀별 실시 현황</div>
           <BarChart data={teamCounts} maxVal={15}/>
         </div>
 
-        {/* 질문별 취합 */}
         {scopeDone>0&&(
           <div style={{margin:"12px 14px 0",background:"#161b27",border:"1px solid #1e2535",borderRadius:12,overflow:"hidden"}}>
             <div style={Sb.sectionHdr}>📋 질문별 답변 취합 ({fmtDateFull(dashDate)})</div>
@@ -1034,7 +933,6 @@ function TeamNamesPage({teamNames, onSave, onBack}) {
           </div>
         )}
 
-        {/* 팀별 조 현황 */}
         {dispTeams.map(team=>{
           const groups=GROUPS[team];
           const vis=isSuper?groups:groups.filter(g=>!disabled[g]);
