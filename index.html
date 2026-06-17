@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>TBM 안전회의</title>
-<link rel="manifest" href="/manifest.json"/>
+<link rel="manifest" href="/safety/manifest.json"/>
 <meta name="theme-color" content="#2563eb"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -992,7 +992,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 <script>
 if("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js");
+    navigator.serviceWorker.register("/safety/sw.js");
   });
 }
 </script>
