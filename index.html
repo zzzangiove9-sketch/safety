@@ -583,10 +583,175 @@ if(page==="admin"&&!admin) return (
 );
 
 if(viewGroup&&admin) {
-const sub=dashSubs[viewGroup];
+  const sub = dashSubs[viewGroup];
+  return (
+    <div style={sx({paddingBottom:40})}>
+      <div style={Sb.topBar}>
+        <button style={Sb.backBtn} onClick={()=>setViewGroup(null)}>← 뒤로</button>
+        <span style={Sb.topTitle}> {gName(viewGroup)} 점검결과</span>
+      </div>
+      
+      {sub ? (
+        <div>
+          <div style={Sb.card}>
+            <p style={sx({fontSize:16,color:"#6b7280",marginBottom:4,fontWeight:600})}>점검 및 인적사항</p>
+            <p style={sx({fontSize:20,fontWeight:700,color:"#f0f4ff"})}>정·부진행자: {sub.name}</p>
+            <p style={sx({fontSize:16,color:"#9ca3af",marginTop:4})}>제출 완료 시간: {sub.time}</p>
+          </div>
+          
+          {QUESTIONS.map(q => {
+            if(q.condition && sub.answers?.[q.condition.q] !== q.condition.val) return null;
+            return (
+              <div key={q.id} style={Sb.card}>
+                <p style={sx({fontSize:18,fontWeight:600,color:"#e8eaf0",lineHeight:1.6})}>Q{q.id}. {q.text}</p>
+                <div style={sx({marginTop:10,padding:"10px 14px",background:"#0f1117",borderRadius:8,border:"1px solid #1e2535"})}>
+                  <span style={sx({
+                    fontSize:18,
+                    fontWeight:700,
+                    color: sub.answers?.[q.id] === "네" ? "#4ade80" : sub.answers?.[q.id] === "아니요" ? "#f87171" : "#60a5fa"
+                  })}>
+                    {sub.answers?.[q.id] || "(미입력 공란)"}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div style={sx({...Sb.card,textAlign:"center",padding:"40px 0"})}>
+          <p style={sx({color:"#9ca3af",fontSize:18})}>선택한 날짜에 제출된 점검 데이터가 존재하지 않습니다.</p>
+        </div>
+      )}
+      
+      <div style={sx({padding:"14px 14px 0"})}>
+        <button style={Sb.btnSecondary} onClick={()=>setViewGroup(null)}>목록으로 돌아가기</button>
+      </div>
+    </div>
+  );
+}
+
+if(page==="admin" && admin) {
+  const summary = qSummary(dashSubs);
+  const filteredGroups = ALL_GROUPS.filter(g => !disabled[g] && (filterTeam === "전체" || g.startsWith(filterTeam)));
+  
+  const handleSaveNotice = async () => {
+    const nextNotices = { ...notices, [dashDate]: noticeInput };
+    try {
+      await db.collection("settings").doc("config").set({ customNotices: nextNotices }, { merge: true });
+      setNoticeEdit(false);
+    } catch(e) {
+      alert("공지사항 업데이트 실패: " + e.message);
+    }
+  };
+
+  return (
+    <div style={sx({paddingBottom:40})}>
+      {showCal && <CalendarPicker value={dashDate} onChange={v=>{setDashDate(v); setShowCal(false);}} onClose={()=>setShowCal(false)} />}
+      
+      <div style={Sb.topBar}>
+        <button style={Sb.backBtn} onClick={()=>{setAdmin(null); setPage("home");}}>← 로그아웃</button>
+        <span style={Sb.topTitle}>관리자 대시보드</span>
+        <span style={admin.role==="super"?Sb.badgeSuper:Sb.badgeTeam}>{admin.label}</span>
+      </div>
+
+      <div style={Sb.card}>
+        <div style={sx({display:"flex",alignItems:"center",justifyContent:"space-between"})}>
+          <span style={sx({fontSize:18,fontWeight:700,color:"#f0f4ff"})}>{fmtDateFull(dashDate)} 현황</span>
+          <button style={Sb.smallBtn} onClick={()=>setShowCal(true)}>📅 날짜 조회변경</button>
+        </div>
+      </div>
+
+      <div style={Sb.card}>
+        <div style={sx({display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8})}>
+          <span style={sx({fontSize:16,fontWeight:700,color:"#60a5fa"})}>📢 선택일 현장 안전준수사항 고지</span>
+          {!noticeEdit && <button style={Sb.smallBtn} onClick={()=>{setNoticeInput(notices[dashDate]||""); setNoticeEdit(true);}}>수정/등록</button>}
+        </div>
+        {noticeEdit ? (
+          <div>
+            <textarea style={Sb.textarea} value={noticeInput} onChange={e=>setNoticeInput(e.target.value)} placeholder="금일 작업 환경에 맞는 일일 안전지침을 직접 하달하세요..." />
+            <div style={sx({display:"flex",gap:6,marginTop:8})}>
+              <button style={sx({...Sb.smallBtn,background:"#2563eb",color:"#fff",flex:1})} onClick={handleSaveNotice}>서버 전송</button>
+              <button style={sx({...Sb.smallBtn,flex:1})} onClick={()=>setNoticeEdit(false)}>취소</button>
+            </div>
+          </div>
+        ) : (
+          <p style={sx({fontSize:17,color:"#bfdbfe",lineHeight:1.6})}>{notices[dashDate] || "(지정된 커스텀 공지가 없어 365일 기본 순환 공지사항이 자동 노출됩니다)"}</p>
+        )}
+      </div>
+
+      {admin.role === "super" && (
+        <div style={sx({padding:"14px 14px 0"})}>
+          <div style={sx({fontSize:15,fontWeight:700,color:"#6b7280",marginBottom:8})}>소속 팀 대시보드 필터</div>
+          <div style={sx({display:"flex",flexWrap:"wrap",gap:6})}>
+            {["전체", ...TEAMS].map(t => (
+              <button key={t} style={filterTeam===t?Sb.chipActive:Sb.chip} onClick={()=>setFilterTeam(t)}>
+                {t === "전체" ? "전체 보기" : tName(t)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div style={Sb.card}>
+        <p style={sx({fontSize:18,fontWeight:700,color:"#f0f4ff",marginBottom:12})}>조별 TBM 이행 현황 ({filteredGroups.filter(g=>dashSubs[g]).length}/{filteredGroups.length})</p>
+        <div style={sx({display:"flex",flexDirection:"column",gap:8})}>
+          {filteredGroups.map(g => {
+            const sub = dashSubs[g];
+            return (
+              <div key={g} style={sx({display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 12px",background:"#0f1117",borderRadius:8,border:"1px solid #1e2535"})}>
+                <div>
+                  <span style={sx({fontSize:17,fontWeight:600,color:"#e8eaf0"})}>{gName(g)}</span>
+                  {sub && <span style={sx({fontSize:14,color:"#6b7280",marginLeft:8})}>{sub.name} ({sub.time})</span>}
+                </div>
+                {sub ? (
+                  <button style={sx({...Sb.smallBtn,background:"#1e3a5f",color:"#60a5fa",border:"1px solid #2563eb44"})} onClick={()=>setViewGroup(g)}>결과상세</button>
+                ) : (
+                  <span style={sx({fontSize:15,color:"#f87171",fontWeight:600,padding:"4px 8px"})}>미제출</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={Sb.card}>
+        <p style={sx({fontSize:18,fontWeight:700,color:"#f0f4ff",marginBottom:12})}>📊 주요 점검항목별 이행(네) 건수</p>
+        <BarChart data={QUESTIONS.filter(q=>q.type==="yesno").map(q=>({
+          label: `Q${q.id}`,
+          val: summary[q.id]?.yes || 0,
+          color: "#2563eb"
+        }))} maxVal={filteredGroups.length || 1} />
+      </div>
+
+      {admin.role === "super" && (
+        <div style={sx({padding:"14px 14px 0",display:"flex",gap:8})}>
+          <button style={sx({...Sb.btnSecondary,flex:1,fontSize:16,padding:12})} onClick={()=>setShowTeamNames(true)}>✏️ 전체 팀명 커스텀</button>
+          <button style={sx({...Sb.btnSecondary,flex:1,fontSize:16,padding:12})} onClick={()=>setShowGroupNames(true)}>✏️ 전체 조명 커스텀</button>
+        </div>
+      )}
+
+      <div style={sx({padding:"12px 14px 0"})}>
+        <button style={Sb.btnGreen} onClick={()=>setShowExcel(true)}>📊 증빙용 엑셀 내보내기 (.xlsx)</button>
+      </div>
+    </div>
+  );
+}
+
 return (
-<div style={sx({paddingBottom:40})}>
-<div style={Sb.topBar}>
+  <div style={sx({textAlign:"center",padding:40})}>
+    <p style={sx({fontSize:18,color:"#9ca3af"})}>비정상적인 접근 경로입니다.</p>
+    <button style={sx({...Sb.btnPrimary,marginTop:20})} onClick={()=>setPage("home")}>안전회의 메인으로</button>
+  </div>
+);
+
+}
+
+const container = document.getElementById('root');
+const root = ReactDOM.createRoot(container);
+root.render(<App />);
+</script>
+</body>
+</html>
 <button style={Sb.backBtn} onClick={()=>setViewGroup(null)}>← 뒤로</button>
 <span style={Sb.topTitle}>{gName(viewGroup)} 상세</span>
 </div>
